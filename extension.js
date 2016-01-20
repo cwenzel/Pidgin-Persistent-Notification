@@ -132,6 +132,9 @@ PurpleClient.prototype = {
 		this._displayedImMessageId = this._proxy.connectSignal('DisplayedImMsg',
 			Lang.bind(this, this._onDisplayedImMsg));
 
+    this._displayedChatMessageId = this._proxy.connectSignal('DisplayedChatMsg',
+      Lang.bind(this, this._onDisplayedImMsg));
+
 		this._conversationUpdatedId = this._proxy.connectSignal('ConversationUpdated',
 			Lang.bind(this, this._onConversationUpdated));
 	},
@@ -147,7 +150,7 @@ PurpleClient.prototype = {
 			return;
 		}
 
-		if(!matchCurrentFocusApp('pidgin.desktop')) {
+    if(!matchCurrentFocusApp('pidgin.desktop')) {
 			this._addPersistentNotification();
 		}
 	},
@@ -214,6 +217,7 @@ PurpleClient.prototype = {
 	 */
 	disconnectFromPurple: function() {
 		this._proxy.disconnectSignal(this._displayedImMessageId);
+		this._proxy.disconnectSignal(this._displayedChatMessageId);
 		this._proxy.disconnectSignal(this._conversationUpdatedId);
 		this._proxy = null;
 
