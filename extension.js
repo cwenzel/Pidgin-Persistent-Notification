@@ -1,4 +1,5 @@
 const Main = imports.ui.main;
+const Mainloop = imports.mainloop;
 const Lang = imports.lang;
 const Gio = imports.gi.Gio;
 const Shell = imports.gi.Shell;
@@ -118,6 +119,7 @@ PurpleClient.prototype = {
 	_init: function(indicator) {
 		this._indicator = indicator;
 		this._clickToFocusHandle = null;
+    this._persistentNotificationEnabled = false;
 	},
 
 	/**
@@ -175,7 +177,21 @@ PurpleClient.prototype = {
 	},
 
 	_addPersistentNotification: function() {
-		this._indicator.actor.add_style_class_name('pidgin-notification');
+    let actor = this._indicator.actor;
+    let on = true;
+
+    this._persistentNotificationEnabled = true;
+
+    Mainloop.timeout_add(500, function () {
+      if(on || !this._persistentNotificationEnabled)
+        actor.remove_style_class_name('pidgin-notification');
+      else
+        actor.add_style_class_name('pidgin-notification');
+      on = !on;
+      return this._persistentNotificationEnabled;
+    }.bind(this));
+
+		actor.add_style_class_name('pidgin-notification');
 
 		if (this._clickToFocusHandle == null) {
 			this._clickToFocusHandle = this._indicator.actor.connect('button-press-event', Lang.bind(this, this._focusChatWindow));
@@ -184,6 +200,7 @@ PurpleClient.prototype = {
 
 	_removePersistentNotification: function() {
 		this._indicator.actor.remove_style_class_name('pidgin-notification');
+    this._persistentNotificationEnabled = false;
 
 		if (this._clickToFocusHandle != null) {
 			this._indicator.actor.disconnect(this._clickToFocusHandle);
